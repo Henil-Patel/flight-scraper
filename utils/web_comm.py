@@ -1,7 +1,9 @@
 import requests
+from selenium import webdriver
 import datetime
 import logging
 import time
+
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(filename='web_comm.log', encoding='utf-8', level=logging.DEBUG)
@@ -35,7 +37,8 @@ class Web_Driver:
         # TODO: Add cabin class options in future ;)
         # TODO: Trim URL
         # TODO: Add more URLs
-        self.site_lib = {'skyscanner': f"https://www.skyscanner.com/transport/flights/{self._in['orig']}/{self._in['dest']}/{self._in['start']['fmt']}/{self._in['end']['fmt']}/?adultsv2={self._in['qty']}&cabinclass=economy&childrenv2=&inboundaltsenabled=false&outboundaltsenabled=false&preferdirects=false&rtn=1"}
+        self.site_lib = {'skyscanner': f"https://www.skyscanner.com/transport/flights/{self._in['orig']}/{self._in['dest']}/{self._in['start']['fmt']}/{self._in['end']['fmt']}/?adultsv2={self._in['qty']}&cabinclass=economy&childrenv2=&inboundaltsenabled=false&outboundaltsenabled=false&preferdirects=false&rtn=1",
+                        'kayak': f"https://www.kayak.com/flights/RDU,IAD-BDQ,AMD/2022-10-27/2022-11-11?sort=price_a"}
     
     # Helpers
     def test_response_code(self, site: str, retry: int = 1):
