@@ -1,3 +1,4 @@
+from ctypes import Union
 import requests
 from selenium import webdriver
 import datetime
@@ -10,13 +11,12 @@ logging.basicConfig(filename='web_comm.log', encoding='utf-8', level=logging.DEB
 
 class Web_Driver:
 
-    def __init__(self, origin: str, destination: str, start: str, end: str, quantity: int = 1):
+    def __init__(self, origin: list(str), destination: list(str), start: str, end: str, quantity: int = 1):
         
-        assert origin != destination, "Can't fly to same airport"
         this_century = str(int(datetime.date.today().year / 100))
         self._in = {
-            'orig': origin.lower(),
-            'dest': destination.lower(),
+            'orig': origin,
+            'dest': destination,
             'start': {'yy': int(this_century + start[0:2]), 'mm': int(start[2:4]), 'dd': int(start[4:6]), 'fmt': start},
             'end': {'yy': int(this_century + end[0:2]), 'mm': int(end[2:4]), 'dd': int(end[4:6]), 'fmt': end},
             'qty': str(quantity) 
@@ -24,7 +24,7 @@ class Web_Driver:
         self.check_dates(self._in)
     
     # Main Utils
-    def generate_urls(self):
+    def url_lib(self):
         '''
             URL requirements:
                 -> (SkyScanner):
@@ -32,15 +32,48 @@ class Web_Driver:
                     dest - 'ams', 'AMS' (Amsterdam)
                     start - '221029' (October 29th 2022)
                     end - '221112' (November 12th 2022)
+                -> (Kayak):
+                    orig - RDU,IAD...
+                    dest - BDQ,AMD...
+                    start - 2022-10-27
+                    end - 2022-11-11
         '''
 
         # TODO: Add cabin class options in future ;)
         # TODO: Trim URL
         # TODO: Add more URLs
-        self.site_lib = {'skyscanner': f"https://www.skyscanner.com/transport/flights/{self._in['orig']}/{self._in['dest']}/{self._in['start']['fmt']}/{self._in['end']['fmt']}/?adultsv2={self._in['qty']}&cabinclass=economy&childrenv2=&inboundaltsenabled=false&outboundaltsenabled=false&preferdirects=false&rtn=1",
-                        'kayak': f"https://www.kayak.com/flights/RDU,IAD-BDQ,AMD/2022-10-27/2022-11-11?sort=price_a"}
+        self.site_lib = {'kayak': self._build_kayak()}
     
     # Helpers
+
+    def _build_kayak(self) -> str:
+        def _format_airport_codes(codes: Union(list, str)) -> str:
+            # Set to upper case 
+            if type(codes, list):
+                codes = [i.upper() for i in codes]
+            elif type(codes, str):
+                codes = codes.upper()
+
+            # Concatenate to string 
+            conc_code = str()
+            for airport in codes:
+                conc_code = conc_code + airport + ','
+            conc_code = conc_code.rstrip(',')
+        
+        def _format_date(raw_date: str) -> str:
+            pass 
+        
+        orig, dest = self._in.get('orig'), self._in.get('dest')
+        _orig = _format_airport_codes(orig)
+        _dest = _format_airport_codes(dest)
+        url = f"https://www.kayak.com/flights/{_orig}-{_dest}/{2022-10-27}/{2022-11-11}?sort=price_a"
+        return url
+
+        
+
+    def _build_skyscanner(self):
+        pass 
+
     def test_response_code(self, site: str, retry: int = 1):
         '''
             This method is to get the response code and make sure everything is working as expected.
